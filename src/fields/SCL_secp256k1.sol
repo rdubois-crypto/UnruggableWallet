@@ -16,7 +16,7 @@ uint256 constant p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEF
 // short weierstrass first coefficient
 uint256 constant a = 0;
 // short weierstrass second coefficient
-uint256 constant b = 0;
+uint256 constant b = 7;
 // the affine coordinates of the generating point on the curve
 //48439561293906451759052585252797914202762949526041747995844080717082404635286
 uint256 constant gx = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798;
