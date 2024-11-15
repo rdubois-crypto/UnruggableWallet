@@ -43,9 +43,16 @@ The test includes the BIP327 test vectors, enforcing compatibility of the signer
 
 ### Contracts (On chain Verifier)
 
-Once in the `Contracts` folder, set your environement variables and then:
+The Onchain verifier is the smartContract libSCL_BIP327.sol. 
 
-Live contracts addresses
+
+#### Deploy the stack on networks 
+
+```bash
+forge script tbd.s.sol --private-key <PRIVATE_KEY> --broadcast -vvv --rpc-url <RPC_URL>
+```
+
+## Live contracts addresses
 
 ## References
 - Multisignature in bitcoin : https://bitcoinwiki.org/wiki/multisignature
