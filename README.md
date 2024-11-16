@@ -70,43 +70,43 @@ While the main contract storing Musig2 verification is deployed on all chains. O
 
 
 - Mekong testnet
-  * chainID:
-  * RPC:
+  * chainID:7078815900
+  * RPC:https://rpc.mekong.ethpandaops.io
   * Deployed address:
 
 - Arbitrum Sepolia testnet
   * chainID:421614
-  * RPC:
+  * RPC:https://endpoints.omniatech.io/v1/arbitrum/sepolia/public
   * Deployed address:
 
 - Polygon Amoy
   * chainID:80002
-  * RPC:
+  * RPC:https://polygon-amoy.drpc.org
   * Deployed address:
 
 - Base Sepolia testnet
   * chainID:84532
-  * RPC:
+  * RPC:wss://base-sepolia-rpc.publicnode.com
   * Deployed address:
 
 - Scroll Sepolia testnet
   * chainID:534351
-  * RPC:
+  * RPC:wss://scroll-sepolia-rpc.publicnode.com
   * Deployed address:
 
-- CELO testnet
-  * chainID:
-  * RPC:
+- CELO Alfajores testnet
+  * chainID:44787
+  * RPC:wss://alfajores-forno.celo-testnet.org/ws
   * Deployed address:
 
 - Mantle testnet
-  * chainID:
-  * RPC:
+  * chainID:5003
+  * RPC:https://rpc.sepolia.mantle.xyz
   * Deployed address:
 
-- Linea
-  * chainID:
-  * RPC:
+- Linea Sepolia
+  * chainID:59141
+  * RPC:wss://linea-sepolia-rpc.publicnode.com
   * Deployed address:
 
 
