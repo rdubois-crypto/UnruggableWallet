@@ -213,7 +213,12 @@ function test_partialsig_notweak(){
 
   let res= psign(secnonce, sk, session_ctx);
 
-  console.log("res=", res);
+  console.log("res=", Buffer.from(res));
+
+  console.log("expected=", expected);
+
+  console.log( Buffer.from(res).equals(expected));
+  
 }
 
 //valid test case 1 from https://github.com/bitcoin/bips/blob/master/bip-0327/vectors/sig_agg_vectors.json
