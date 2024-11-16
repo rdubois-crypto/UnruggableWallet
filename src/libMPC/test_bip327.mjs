@@ -121,6 +121,10 @@ function test_tagged_hashBTC(){
   }
   
 function test_nonceagg(){
+  console.log("/*************************** ");
+  console.log("Test nonce_agg:");
+
+
   //partial public nonces before aggregation  
   let pnonces= [
         "020151C80F435648DF67A22B749CD798CE54E0321D034B92B709B567D60A42E66603BA47FBC1834437B3212E89A84D8425E7BF12E0245D98262268EBDCB385D50641",
@@ -135,10 +139,17 @@ function test_nonceagg(){
 
   let res=nonce_agg([pnonces[0], pnonces[1]]);
 
-  console.log("res",res);
-  res=nonce_agg([pnonces[2], pnonces[3]]);
 
   console.log("res",res);
+  console.log("expected",expected_agg1);
+
+  console.log(res.equals(Buffer.from(expected_agg1,'hex')));
+  res=nonce_agg([pnonces[2], pnonces[3]]);
+
+  console.log(res.equals(Buffer.from(expected_agg2,'hex')));
+  return 1;
+  console.log("res",res);
+  console.log("expected",expected_agg2);
 
 }
 
@@ -190,7 +201,7 @@ let sig=Buffer.from("61074a45b0030ff5b7280dd094bf06c361adc0394a9bd17756db7bc9aa5
 
 //todo as comeback, sign_verify.json
 function test_partialsig_notweak(){
-
+  console.log("/*************************** ");
   console.log("Partial sig no tweak:");
 
   const pubkeys= [
@@ -218,11 +229,15 @@ function test_partialsig_notweak(){
   console.log("expected=", expected);
 
   console.log( Buffer.from(res).equals(expected));
-  
+
 }
 
 //valid test case 1 from https://github.com/bitcoin/bips/blob/master/bip-0327/vectors/sig_agg_vectors.json
 function test_sigagg_notweak(){
+  console.log("/*************************** ");
+  console.log("Test signature aggregation without tweak:");
+
+
   const pubkeys=[Buffer.from("03935F972DA013F80AE011890FA89B67A27B7BE6CCB24D3274D18B2D4067F261A9", 'hex'),
         Buffer.from("02D2DC6F5DF7C56ACF38C7FA0AE7A759AE30E19B37359DFDE015872324C7EF6E05", 'hex')];
 
@@ -241,6 +256,11 @@ function test_sigagg_notweak(){
   let res=partial_sig_agg(psigs, session_context);
   console.log("res=", res.toString('hex'));
 
+  let aggpkX=key_agg(pubkeys)[0].slice(1,33);
+  let vrf=schnorr_verify(msg, aggpkX, res);
+  
+  console.log("schnorr verify=", vrf);
+  
 }
 
 
@@ -300,29 +320,28 @@ function test_partialsig_withtweak_2(){
 
 //illustrate a session without tweak
 function test_sign_and_verify_random_notweak(){
+  console.log("/*************************** ");
+  console.log("Test full session:");
+
 
     const sk1=secp256k1.utils.randomPrivateKey();//this provides a 32 bytes array
     const sk2=secp256k1.utils.randomPrivateKey();
     
-    console.log("sec=",sk1 );
-    const pubK1=IndividualPubKey_array(sk1);
-    const pubK2=IndividualPubKey_array(sk2);
-    
-
+    console.log("sk1=",sk1 );
+    console.log("sk2=",sk2 );
     let seckeys=[sk1, sk2];
 
-    console.log("sec=",seckeys );
+    const pubK1=IndividualPubKey_array(sk1);
+    const pubK2=IndividualPubKey_array(sk2);
 
+    console.log("pubK1=",pubK1 );
+    console.log("pubK2=",pubK2 );
     const pubkeys=[pubK1, pubK2];
-
-    
-    console.log("pub=",pubkeys );
-
 
     let aggpk = key_agg(pubkeys)[0];//here aggpk is a 33 bytes compressed public key
     let x_aggpk=aggpk.slice(1,33);//x-only version for noncegen
 
-    console.log("aggregated:", aggpk);
+    console.log("Aggregated Pubkey:", aggpk);
 
     let msg=Buffer.from("abc", 'utf-8');
     let i=0;
@@ -331,20 +350,14 @@ function test_sign_and_verify_random_notweak(){
     const extra_in= Buffer.from(randomBytes(32));
     
     let nonce1= nonce_gen(seckeys[0], pubkeys[0], x_aggpk,  msg, extra_in);
-    console.log("nonce1:", nonce1);
-
-    
     let nonce2= nonce_gen(seckeys[1], pubkeys[1], x_aggpk,  msg, extra_in);
 
-
+    //aggregation of public nonces
     let aggnonce = nonce_agg([nonce1[1].toString('hex'), nonce2[1].toString('hex')]);
+    console.log("aggnonce=", aggnonce);
 
-
-
-    const tweaks=[];
     //'aggnonce','pubkeys', 'tweaks', 'is_xonly','msg';
     const session_ctx=[aggnonce, pubkeys, [], [], msg];
-
 
     let p1=psign(nonce1[0], seckeys[0], session_ctx);
     console.log("p1=",p1);
@@ -357,7 +370,7 @@ function test_sign_and_verify_random_notweak(){
     let res=partial_sig_agg(psigs, session_ctx);
     console.log("res=", res, res.length);
 
-    let check=schnorr_verify(msg, aggpk, res);
+    let check=schnorr_verify(msg, x_aggpk, res);
 
     console.log("check=", check);
 }
@@ -366,18 +379,17 @@ function test_sign_and_verify_random_notweak(){
   (async () => {
     
   // Example usage:
-  /*test_tagged_hashBTC();
-  test_noncegen();
-  test_nonceagg();
-  test_keyaggcoeff();
-  test_sigagg_notweak();
-  test_partialsig_withtweak_1();
-  test_partialsig_withtweak_2();
-    */
-  //test_nonceagg();
-  //test_schnorrverify();
-  //test_sign_and_verify_random_notweak();
-  test_partialsig_notweak();
+  test_tagged_hashBTC(); //hash is ok
+  test_noncegen(); //nonce generation is ok
+  test_nonceagg();//nonce aggregation is ok
+  
+  test_keyaggcoeff();//key aggregation is ok
+  test_partialsig_notweak();//partoaml signature is ok
+  
+  test_sigagg_notweak();//signature aggregation is ok
+ 
+  test_sign_and_verify_random_notweak();
+  
   })();
   
   

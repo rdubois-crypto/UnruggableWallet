@@ -490,6 +490,10 @@ def partial_sig_agg(psigs: List[bytes], session_ctx: SessionContext) -> bytes:
     g = 1 if has_even_y(Q) else n - 1
     s = (s + e * g * tacc) % n
     return xbytes(R) + bytes_from_int(s)
+
+#####################################################################
+
+
 #
 # The following code is only used for testing.
 #

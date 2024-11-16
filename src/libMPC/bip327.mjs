@@ -68,19 +68,13 @@ function bytes_xor(a,b){
 
 export function  IndividualPubKey_array(scalar_array){
   const publicKey = getPublicKey(scalar_array); // 'true' for compressed format
-  if(publicKey[0]=0x03){
-    publicKey[0]=0x02;//force even parity as in BIP327
-    
-  }
+  
   return publicKey;
 }
 
 export function  IndividualPubKey(scalar){
   const publicKey = getPublicKey(scalar, true); // 'true' for compressed format
-  if(publicKey[0]=0x03){
-    publicKey[0]=0x02;//force even parity as in BIP327
-    
-  }
+  
   return publicKey;
 }
 
@@ -148,14 +142,21 @@ export function key_agg_coeff(pubkeys, pki){
   return key_agg_coeff_internal(pubkeys, pki, pk2)
 }
 
+//only for keyagg, nonceagg and getsession_values, if a point is odd, then its negation is taken
+//input is 33 bytes compressed key with parity
+function cpoint(bytePoint){
+ 
+  let P=secp256k1.ProjectivePoint.fromHex(bytePoint);
+  
+  return P;
+}
+
+
 // Function equivalent test if point is infinity, if not return even point
 function cpoint_ext(Point) {
-  let ret=Buffer.alloc(0);
-  // Check if x is a 33-byte array of zeros
-  if(secp256k1.ProjectivePoint.BASE!=Point)//todo equals ?
-      ret=(Point).toRawBytes();
-    
-    return ret;
+ 
+
+    return cpoint(Point);
 }
 
 //the key aggregation function, prior to tweak
@@ -166,7 +167,7 @@ export function key_agg(pubkeys){
   let Q = secp256k1.ProjectivePoint.ZERO;//infinity neutral point
   let P= secp256k1.ProjectivePoint.BASE;
   for(let i=0;i<u;i++){
-    let Pi=secp256k1.ProjectivePoint.fromHex(pubkeys[i]);
+    let Pi=cpoint(pubkeys[i]);
    // console.log("Pi",Pi)
     if(Pi==false)
       return false;
@@ -412,40 +413,19 @@ export function nonce_agg(pubnonces){
     for(let i=0;i<u;i++){
       
       let rij= pubnonces[i].slice((j - 1) * 66, j * 66);
-     
-      let Rij =ProjectivePoint.fromHex(rij);//extract one of the two points
-     
+      //hex to bytes, to cpoint
+      let Rij=cpoint(Buffer.from(rij,'hex'));
+
       Rj= Rj.add(Rij);
     }
     aggnonce=Buffer.concat([aggnonce, cbytes_ext(Rj)]);
-    
+    console.log("aggnonce=", aggnonce);
+
   }
   return aggnonce;
 }
 
 
-//this part correspond to the round 1 of Musig: aggregation of individual nonces
-//input is a 2 dimensional array of pubnonces of size u, in string format
-export function nonce_agg_bytearray(pubnonces){
-
-  let u = pubnonces.length;
-  let aggnonce = Buffer.alloc(0);
-  for(let j=1;j<=2;j++){
-    let Rj = secp256k1.ProjectivePoint.ZERO;//infinity neutral point
-    
-    for(let i=0;i<u;i++){
-      
-      let rij= pubnonces[i].slice((j - 1) * 66, j * 66);
-     
-      let Rij =ProjectivePoint.fromHex(rij);//extract one of the two points
-     
-      Rj= Rj.add(Rij);
-    }
-    aggnonce=Buffer.concat([aggnonce, cbytes_ext(Rj)]);
-    
-  }
-  return aggnonce;
-}
 
 //todo: check that P1=P2 or P1==-P2 is true to avoid misuse of secnonce
 export function equalsX(Point1, Point2){
@@ -537,7 +517,7 @@ export function partial_sig_agg(psigs, session_ctx){
   if(has_even_y(Q)==false)
     g=secp256k1.CURVE.n - g;//n-1
 
-  //console.log("tacc", tacc);
+  console.log("tacc", tacc);
 
   s = (s + e * g * tacc) % secp256k1.CURVE.n;
   s=Buffer.from(s.toString(16), 'hex');
@@ -582,7 +562,11 @@ export function schnorr_verify(msg, pubkey, sig){
   if(has_even_y(R)!=true)
     return false;
 
+
   R=R.slice(1,33);//prune parity of y 
+  console.log("final comparizon");
+
+  console.log("expected r",r, "recomputed r", int_from_bytes(R));
 
   if(int_from_bytes(R)!=r)
     return false;
