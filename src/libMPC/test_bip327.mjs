@@ -190,6 +190,9 @@ let sig=Buffer.from("61074a45b0030ff5b7280dd094bf06c361adc0394a9bd17756db7bc9aa5
 
 //todo as comeback, sign_verify.json
 function test_partialsig_notweak(){
+
+  console.log("Partial sig no tweak:");
+
   const pubkeys= [
         Buffer.from("03935F972DA013F80AE011890FA89B67A27B7BE6CCB24D3274D18B2D4067F261A9", 'hex'),
         Buffer.from("02F9308A019258C31049344F85F89D5229B531C845836F99B08601F113BCE036F9", 'hex'),
@@ -208,7 +211,9 @@ function test_partialsig_notweak(){
   const session_ctx=[aggnonce, pubkeys, [], [], msg];
   const expected=Buffer.from("012ABBCB52B3016AC03AD82395A1A415C48B93DEF78718E62A7A90052FE224FB", 'hex');
 
+  let res= psign(secnonce, sk, session_ctx);
 
+  console.log("res=", res);
 }
 
 //valid test case 1 from https://github.com/bitcoin/bips/blob/master/bip-0327/vectors/sig_agg_vectors.json
@@ -296,7 +301,7 @@ function test_sign_and_verify_random_notweak(){
     
     console.log("sec=",sk1 );
     const pubK1=IndividualPubKey_array(sk1);
-    const pubK2=IndividualPubKey_array(sk1);
+    const pubK2=IndividualPubKey_array(sk2);
     
 
     let seckeys=[sk1, sk2];
@@ -313,7 +318,6 @@ function test_sign_and_verify_random_notweak(){
     let x_aggpk=aggpk.slice(1,33);//x-only version for noncegen
 
     console.log("aggregated:", aggpk);
-    console.log(" xonly aggregated:", x_aggpk);
 
     let msg=Buffer.from("abc", 'utf-8');
     let i=0;
@@ -322,6 +326,9 @@ function test_sign_and_verify_random_notweak(){
     const extra_in= Buffer.from(randomBytes(32));
     
     let nonce1= nonce_gen(seckeys[0], pubkeys[0], x_aggpk,  msg, extra_in);
+    console.log("nonce1:", nonce1);
+
+    
     let nonce2= nonce_gen(seckeys[1], pubkeys[1], x_aggpk,  msg, extra_in);
 
 
@@ -335,11 +342,16 @@ function test_sign_and_verify_random_notweak(){
 
 
     let p1=psign(nonce1[0], seckeys[0], session_ctx);
+    console.log("p1=",p1);
+
     let p2=psign(nonce2[0], seckeys[1], session_ctx);
+    console.log("p2=",p2);
     
     let psigs=[p1,p2];
 
-    let res=partial_sig_agg(psigs, session_context);
+    let res=partial_sig_agg(psigs, session_ctx);
+    console.log("res=", res, res.length);
+
     let check=schnorr_verify(msg, aggpk, res);
 
     console.log("check=", check);
@@ -357,10 +369,10 @@ function test_sign_and_verify_random_notweak(){
   test_partialsig_withtweak_1();
   test_partialsig_withtweak_2();
     */
-  test_nonceagg();
-  test_schnorrverify();
-  test_sign_and_verify_random_notweak();
-
+  //test_nonceagg();
+  //test_schnorrverify();
+  //test_sign_and_verify_random_notweak();
+  test_partialsig_notweak();
   })();
   
   

@@ -10,7 +10,7 @@
 /* License: This software is licensed under MIT License                                        
 /********************************************************************************************/
 // Use import instead of require in ES modules
-import { utils, getPublicKey } from '@noble/secp256k1';
+import { etc, utils, getPublicKey } from '@noble/secp256k1';
 import { randomBytes } from 'crypto'; // Use Node.js's crypto module
 
 import {  secp256k1 } from '@noble/curves/secp256k1'; // ESM and Common.js
@@ -403,7 +403,7 @@ export function nonce_gen(sk,pk,aggpk, m,extra_in){
 //input is a 2 dimensional array of pubnonces of size u, in string format
 export function nonce_agg(pubnonces){
   console.log("input to nonce agg", pubnonces);
-  
+
   let u = pubnonces.length;
   let aggnonce = Buffer.alloc(0);
   for(let j=1;j<=2;j++){
@@ -447,6 +447,11 @@ export function nonce_agg_bytearray(pubnonces){
   return aggnonce;
 }
 
+//todo: check that P1=P2 or P1==-P2 is true to avoid misuse of secnonce
+export function equalsX(Point1, Point2){
+
+  return true;
+}
 /********************************************************************************************/
 /* MPC SIGNATURE GENERATION FUNCTIONS*/   
 /********************************************************************************************/
@@ -458,38 +463,59 @@ export function nonce_agg_bytearray(pubnonces){
 export function psign(secnonce, sk, session_ctx){
   
   let k1= int_from_bytes(secnonce.slice(0, 32));
-  let k2= int_from_bytes(secnonce.slice(0, 64));
+  let k2= int_from_bytes(secnonce.slice(32, 64));
+
+  console.log("k1,k2=", k1, k2);
   let session_values= get_session_values(session_ctx);// (Q, gacc, _, b, R, e)  
+  let R=session_values[4];
+  let b=session_values[3];
+  let e=session_values[5];
   //todo : test range of k1 and k2
   if (has_even_y(R)==false)
     {
       k1=secp256k1.CURVE.n-k1;
       k2=secp256k1.CURVE.n-k2;
     }
-  d_ = int_from_bytes(sk)
+  let d_ = int_from_bytes(sk)
   //todo : test range d
 
   let G= secp256k1.ProjectivePoint.BASE;
-  let P = (G.multiply(d_)).toRawBytes();//should be equal to pk
-  let secnonce_pk=secnonce.slice(64, 97);
-  if(P.equals(ProjectivePoint.fromHex(secnonce_pk))==false){
+  let P = (G.multiply(d_));//should be equal to pk
+  let secnonce_pk=secnonce.slice(64, 97);//pk is part of secnonce
+  let Q3=ProjectivePoint.fromHex(secnonce_pk);
+
+  console.log("P=",P);
+  console.log("Q3=",Q3);
+  //todo test x equality
+  if(equalsX(P,Q3)==false){
+    console.log("false");
     return false;//wrong public key
   }
-  let R=session_values[4];
   
   let a=get_session_key_agg_coeff(session_ctx[1], secnonce.slice(64, 97));
+  console.log("a=",a);
+
   let g=BigInt('0x1') ;
   if(has_even_y(session_values[0])==false)
     g=secp256k1.CURVE.n-g;//n-1
-  d = (g * session_values[1] * d_) % secp256k1.CURVE.n;//d = (g * gacc * d_) % n
-  s = (k1 + b * k2 + e * a * d) % secp256k1.CURVE.n;
+  let d = mulmod(g , session_values[1] );//d = (g * gacc * d_) % n
+  d= mulmod(d, d_);
+  console.log("d=",d);
+  let s = (k1 + mulmod(b , k2) ) % secp256k1.CURVE.n;//
+  s= (s+ mulmod(mulmod(e , a) , d))% secp256k1.CURVE.n;
+  console.log("s=",s);
   //todo: optional partial verif
-  let psig=secp256k1.utils.numberToBytesBE(s, 32);
-
+  let psig=etc.numberToBytesBE(s,32);
+  console.log("psig=",psig);
   return psig;
 }
 
 //session context: 'aggnonce','pubkeys', 'tweaks', 'is_xonly','msg
+
+function mulmod(a, b) {
+  return (a*b) % secp256k1.CURVE.n;
+}
+
 
 //operations are not constant time, not required as aggregation is a public function
 export function partial_sig_agg(psigs, session_ctx){

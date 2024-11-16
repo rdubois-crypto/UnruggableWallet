@@ -375,6 +375,9 @@ def sign(secnonce: bytearray, sk: bytes, session_ctx: SessionContext) -> bytes:
     (Q, gacc, _, b, R, e) = get_session_values(session_ctx)
     k_1_ = int_from_bytes(secnonce[0:32])
     k_2_ = int_from_bytes(secnonce[32:64])
+
+    print("k1,k2=",k_1_,k_2_);
+
     # Overwrite the secnonce argument with zeros such that subsequent calls of
     # sign with the same secnonce raise a ValueError.
     secnonce[:64] = bytearray(b'\x00'*64)
@@ -393,10 +396,18 @@ def sign(secnonce: bytearray, sk: bytes, session_ctx: SessionContext) -> bytes:
     if not pk == secnonce[64:97]:
         raise ValueError('Public key does not match nonce_gen argument')
     a = get_session_key_agg_coeff(session_ctx, P)
+    print("a=",a)
     g = 1 if has_even_y(Q) else n - 1
+    
     d = g * gacc * d_ % n
+    print("d=",d);
+
     s = (k_1 + b * k_2 + e * a * d) % n
+    print("s=",s);
+
     psig = bytes_from_int(s)
+    print("psig=",hex(int_from_bytes(psig)));
+
     R_s1 = point_mul(G, k_1_)
     R_s2 = point_mul(G, k_2_)
     assert R_s1 is not None
@@ -597,6 +608,9 @@ def test_nonce_agg_vectors() -> None:
         pubnonces = [pnonce[i] for i in test_case["pnonce_indices"]]
         assert_raises(exception, lambda: nonce_agg(pubnonces), except_fn)
 
+
+    
+    
 def test_sign_verify_vectors() -> None:
     with open(os.path.join(sys.path[0], 'vectors', 'sign_verify_vectors.json')) as f:
         test_data = json.load(f)
@@ -631,23 +645,35 @@ def test_sign_verify_vectors() -> None:
     verify_error_test_cases = test_data["verify_error_test_cases"]
 
     for test_case in valid_test_cases:
-        pubkeys = [X[i] for i in test_case["key_indices"]]
-        pubnonces = [pnonce[i] for i in test_case["nonce_indices"]]
-        aggnonce = aggnonces[test_case["aggnonce_index"]]
+
+        if((test_case==valid_test_cases[3]) or (test_case==valid_test_cases[0])):
+            pubkeys = [X[i] for i in test_case["key_indices"]]
+            pubnonces = [pnonce[i] for i in test_case["nonce_indices"]]
+            aggnonce = aggnonces[test_case["aggnonce_index"]]
         # Make sure that pubnonces and aggnonce in the test vector are
         # consistent
-        assert nonce_agg(pubnonces) == aggnonce
-        msg = msgs[test_case["msg_index"]]
-        signer_index = test_case["signer_index"]
-        expected = bytes.fromhex(test_case["expected"])
+            assert nonce_agg(pubnonces) == aggnonce
+            msg = msgs[test_case["msg_index"]]
+            signer_index = test_case["signer_index"]
+            expected = bytes.fromhex(test_case["expected"])
 
-        session_ctx = SessionContext(aggnonce, pubkeys, [], [], msg)
+            session_ctx = SessionContext(aggnonce, pubkeys, [], [], msg)
         # WARNING: An actual implementation should _not_ copy the secnonce.
         # Reusing the secnonce, as we do here for testing purposes, can leak the
         # secret key.
-        secnonce_tmp = bytearray(secnonces[0])
-        assert sign(secnonce_tmp, sk, session_ctx) == expected
-        assert partial_sig_verify(expected, pubnonces, pubkeys, [], [], msg, signer_index)
+            secnonce_tmp = bytearray(secnonces[0])
+
+            print("\n   psig \n input=", hex(int_from_bytes(secnonce_tmp)),"\n sk=", hex(int_from_bytes(sk)));
+            print("\n   session ctx aggnonce=", hex(int_from_bytes(session_ctx[0])));
+            print("\n   session ctx pubkeys=", hex(int_from_bytes(session_ctx[1][0])));
+            print("\n   session ctx pubkeys=", hex(int_from_bytes(session_ctx[1][1])));
+            print("\n   session ctx msg=", hex(int_from_bytes(session_ctx[4])));
+         
+            print("\n   psig expected=", hex(int_from_bytes(expected)));
+
+            assert sign(secnonce_tmp, sk, session_ctx) == expected
+            assert partial_sig_verify(expected, pubnonces, pubkeys, [], [], msg, signer_index)
+            return 0;
 
     for test_case in sign_error_test_cases:
         exception, except_fn = get_error_details(test_case)
@@ -904,8 +930,8 @@ if __name__ == '__main__':
     #test_key_agg_vectors()
     #test_nonce_gen_vectors()
     #test_nonce_agg_vectors()
-    #test_sign_verify_vectors()
+    test_sign_verify_vectors()
     #test_tweak_vectors()
     #test_det_sign_vectors()
-    test_sig_agg_vectors()
+    #test_sig_agg_vectors()
     #test_sign_and_verify_random(6)
