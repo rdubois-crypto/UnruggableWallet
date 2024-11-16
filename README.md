@@ -93,6 +93,7 @@ let aggpk = key_agg(pubkeys)[0];
 
 Assuming user generated their public key according to previous section, they now want to jointly sign a message `msg`
 
+#### Round 1
 In first round, user1 and user2 generates public and secret nonces. Public are shared, secret keep in respective secure domain.
 
 ```
@@ -102,6 +103,7 @@ In first round, user1 and user2 generates public and secret nonces. Public are s
     let aggnonce = nonce_agg(nonce1[0], nonce2[0]);
 ```
 
+#### Round 2
 In second round, each user computes its partial signature, which are then aggregated and broadcast on chain:
 
 ```
