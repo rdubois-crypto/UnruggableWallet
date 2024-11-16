@@ -1,5 +1,6 @@
 import{IndividualPubKey_array, psign, partial_sig_agg, schnorr_verify, sha256, tagged_hashBTC, prefix_msg, nonce_gen_internal, nonce_hash, nonce_agg, hash_keys, key_agg_coeff, int_from_bytes, key_agg, nonce_gen} from './bip327.mjs'
 
+import { randomBytes } from 'crypto'; // Use Node.js's crypto module
 import { secp256k1 } from '@noble/curves/secp256k1'; // ESM and Common.js
 
 
@@ -73,6 +74,7 @@ function test_noncegen(){
     for( var i=0;i<1;i++)
     { 
       let i_rand=Buffer.from(rand[i],'hex');
+      console.log("rand noncegen=", i_rand);
       let i_pk=Buffer.from(pk[i],'hex');
       let i_sk=Buffer.from(sk[i],'hex');
       
@@ -295,23 +297,34 @@ function test_sign_and_verify_random_notweak(){
     const pubK2=IndividualPubKey_array(sk1);
     
 
-    let seckeys=[Buffer.from(sk1).toString('hex'), Buffer.from(sk2).toString('hex')];
+    let seckeys=[sk1, sk2];
+
+    console.log("sec=",seckeys );
+
     const pubkeys=[pubK1, pubK2];
 
     
     console.log("pub=",pubkeys );
 
 
-    let aggpk = key_agg(pubkeys)[0];
+    let aggpk = key_agg(pubkeys)[0];//here aggpk is a 33 bytes compressed public key
+    let x_aggpk=aggpk.slice(1,32);//x-only version for noncegen
+
     console.log("aggregated:", aggpk);
 
-    let msg="abc";
+    let msg=Buffer.from("abc", 'utf-8');
     let i=0;
 
-    let nonce1= nonce_gen(seckeys[0], pubkeys[0], aggpk, msg, i.to_bytes(4, 'big'));
-    let nonce2= nonce_gen(seckeys[1], pubkeys[1], aggpk, msg, i.to_bytes(4, 'big'));
+    //diversification chain
+    const extra_in= Buffer.from(randomBytes(32));
+    console.log("extra",extra_in, extra_in.length );
+
+    let nonce1= nonce_gen(seckeys[0], pubkeys[0], aggpk, msg, extra_in);
+    let nonce2= nonce_gen(seckeys[1], pubkeys[1], aggpk, msg, extra_in);
 
     let aggnonce = nonce_agg(nonce1[0], nonce2[0]);
+
+    console.log("aggnonce=", aggnonce);
 
 
     const tweaks=[];
@@ -319,7 +332,7 @@ function test_sign_and_verify_random_notweak(){
     const session_ctx=[aggnonce, pubkeys, [], [], msg];
 
     return 1;
-    
+
     let p1=psign(nonce1[1], seckeys[0], session_ctx);
     let p2=psign(nonce2[1], seckeys[1], session_ctx);
     
@@ -343,6 +356,7 @@ function test_sign_and_verify_random_notweak(){
   test_partialsig_withtweak_1();
   test_partialsig_withtweak_2();
     */
+  test_noncegen();
   test_schnorrverify();
   test_sign_and_verify_random_notweak();
 

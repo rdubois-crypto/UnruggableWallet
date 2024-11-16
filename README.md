@@ -13,7 +13,7 @@ _<p align="center"> - MOO!, I said MOO(sig)_
 
 
 This project was developed as part of the ETHGlobal Bangkok Hackathon.
-Leveraging MPC multisig signature **Musig2** (MOO! ) with Account abstraction, it provides resistance against trapped or buggy hardware (which is the same) by providing a security equal to the **weaker** link. Compared to the safe, the multisig is computed offchain and provide only a single chain verification footprint. This provides both privacy and gas efficiency.
+Leveraging MPC multisig signature **Musig2** (MOO!) with Account abstraction, it provides resistance against trapped or buggy hardware (which is the same) by providing a security equal to the **weaker** link. Compared to the safe, the multisig is computed offchain and provide only a single chain verification footprint. This provides both privacy and gas efficiency.
 
 <div align="center">
 <img src=image-2.png>
@@ -133,6 +133,13 @@ License is MIT, which allow any use as long as citation and headers are provided
 
 (Biased advice: you shall always secure fund with a HW.)
 - https://github.com/paradigmxyz/forge-alphanet: example of Delegation with 7702
+
+
+
+## Warning
+
+This is hackathon code, nonce generation is not safe, do not use this in production !
+
 
 ## Future work
 
