@@ -365,6 +365,7 @@ export function nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in){
   }
 
   let msg_prefixed=prefix_msg(m);
+  console.log("extra internal", extra_in);
 
   let k_1 = nonce_hash(rand, pk, aggpk, 0, msg_prefixed, extra_in)
   let bk_1 = BigInt(`0x${k_1.toString('hex')}`)% secp256k1.CURVE.n;
@@ -388,18 +389,45 @@ export function nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in){
 }
 
 //individual nonce generation, use counter instead
-export function nonce_gen(sk,pk,m,extra_in){
+export function nonce_gen(sk,pk,aggpk, m,extra_in){
   const rand =randomBytes(32);
 
   console.log("rand=", rand);
 
-  return nonce_gen_internal(rand, sk, pk, m , extra_in);
+  console.log("extra_in=", extra_in);
+  return nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in);
 
 }
 
 //this part correspond to the round 1 of Musig: aggregation of individual nonces
-//input is a 2 dimensional array of pubnonces of size u
+//input is a 2 dimensional array of pubnonces of size u, in string format
 export function nonce_agg(pubnonces){
+  console.log("input to nonce agg", pubnonces);
+  
+  let u = pubnonces.length;
+  let aggnonce = Buffer.alloc(0);
+  for(let j=1;j<=2;j++){
+    let Rj = secp256k1.ProjectivePoint.ZERO;//infinity neutral point
+    
+    for(let i=0;i<u;i++){
+      
+      let rij= pubnonces[i].slice((j - 1) * 66, j * 66);
+     
+      let Rij =ProjectivePoint.fromHex(rij);//extract one of the two points
+     
+      Rj= Rj.add(Rij);
+    }
+    aggnonce=Buffer.concat([aggnonce, cbytes_ext(Rj)]);
+    
+  }
+  return aggnonce;
+}
+
+
+//this part correspond to the round 1 of Musig: aggregation of individual nonces
+//input is a 2 dimensional array of pubnonces of size u, in string format
+export function nonce_agg_bytearray(pubnonces){
+
   let u = pubnonces.length;
   let aggnonce = Buffer.alloc(0);
   for(let j=1;j<=2;j++){

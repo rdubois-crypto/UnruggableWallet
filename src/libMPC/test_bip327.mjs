@@ -87,6 +87,8 @@ function test_noncegen(){
       if(res==false) return false;
   
       res=nonce_gen_internal(i_rand, i_sk, i_pk, i_aggpk, i_msg, i_extra);
+     
+
       if((res[0]).equals(Buffer.from(expected_secnonce[i],'hex'))==false) return false;
       if((res[1]).equals(Buffer.from(expected_pubnonce[i],'hex'))==false) return false;
   
@@ -308,33 +310,32 @@ function test_sign_and_verify_random_notweak(){
 
 
     let aggpk = key_agg(pubkeys)[0];//here aggpk is a 33 bytes compressed public key
-    let x_aggpk=aggpk.slice(1,32);//x-only version for noncegen
+    let x_aggpk=aggpk.slice(1,33);//x-only version for noncegen
 
     console.log("aggregated:", aggpk);
+    console.log(" xonly aggregated:", x_aggpk);
 
     let msg=Buffer.from("abc", 'utf-8');
     let i=0;
 
     //diversification chain
     const extra_in= Buffer.from(randomBytes(32));
-    console.log("extra",extra_in, extra_in.length );
+    
+    let nonce1= nonce_gen(seckeys[0], pubkeys[0], x_aggpk,  msg, extra_in);
+    let nonce2= nonce_gen(seckeys[1], pubkeys[1], x_aggpk,  msg, extra_in);
 
-    let nonce1= nonce_gen(seckeys[0], pubkeys[0], aggpk, msg, extra_in);
-    let nonce2= nonce_gen(seckeys[1], pubkeys[1], aggpk, msg, extra_in);
 
-    let aggnonce = nonce_agg(nonce1[0], nonce2[0]);
+    let aggnonce = nonce_agg([nonce1[1].toString('hex'), nonce2[1].toString('hex')]);
 
-    console.log("aggnonce=", aggnonce);
 
 
     const tweaks=[];
     //'aggnonce','pubkeys', 'tweaks', 'is_xonly','msg';
     const session_ctx=[aggnonce, pubkeys, [], [], msg];
 
-    return 1;
 
-    let p1=psign(nonce1[1], seckeys[0], session_ctx);
-    let p2=psign(nonce2[1], seckeys[1], session_ctx);
+    let p1=psign(nonce1[0], seckeys[0], session_ctx);
+    let p2=psign(nonce2[0], seckeys[1], session_ctx);
     
     let psigs=[p1,p2];
 
@@ -356,7 +357,7 @@ function test_sign_and_verify_random_notweak(){
   test_partialsig_withtweak_1();
   test_partialsig_withtweak_2();
     */
-  test_noncegen();
+  test_nonceagg();
   test_schnorrverify();
   test_sign_and_verify_random_notweak();
 

@@ -96,7 +96,7 @@ let aggpk = key_agg(pubkeys)[0];
 
 ### Signature session
 
-Assuming user generated their public key according to previous section, they now want to jointly sign a message `msg`. An example session is provided in 
+Assuming user generated their public key according to previous section, they now want to jointly sign a message `msg`. An example session is provided [here](https://github.com/rdubois-crypto/UnruggableWallet/blob/66b84ec4f807919dd443907463318fac0ac1b5f5/src/libMPC/test_bip327.mjs#L290). 
 
 #### Round 1
 In first round, user1 and user2 generates public and secret nonces. Public are shared, secret keep in respective secure domain.
