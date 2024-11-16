@@ -160,6 +160,13 @@ The initial plan consisted in:
 
 _<p align="center"> - figure: project architecture_
 
+### Execution
+
+- The minimal wallet has been developped from scratch using V0
+- solidity contract is validated over the python reference code, it can be checked using cast. Also note that the references vectors provided in solidity test are present in the python code.
+- javascript functions have been correctly tested against reference vectors of the norm unitary. However when integrated into a whole session, the aggregation of signature shares fail.
+- it is possible to emulate the protocol with python, thus not integrated in the wallet as we expected to integrate the js.
+
 ## Warning
 
 This is hackathon code, nonce generation is not safe, you need expertise to solve antireplay and other tricky stuffs,  do not use this in production !
