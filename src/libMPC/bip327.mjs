@@ -11,6 +11,7 @@
 /********************************************************************************************/
 // Use import instead of require in ES modules
 import { utils, getPublicKey } from '@noble/secp256k1';
+import { randomBytes } from 'crypto'; // Use Node.js's crypto module
 
 import {  secp256k1 } from '@noble/curves/secp256k1'; // ESM and Common.js
 const {mod, ProjectivePoint} = secp256k1;
@@ -318,6 +319,7 @@ function rfc6979GenerateNonce(privateKey, message) {
 //Hash to scalar for nonce
 //all input are bytes
 export function nonce_hash(rand, pk, aggpk, i, msgPrefixed, extraIn) {
+  console.log("ExtraIn:", extraIn);
   // Buffer to concatenate all inputs
   let buf =rand; 
 
@@ -355,6 +357,8 @@ export function prefix_msg(msg){
   return buf;
 }
 
+//expected format for sk is byte array
+//aggpk is optional, compressed over 32 bytes
 export function nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in){
   if(sk.length!=0) {
     rand=bytes_xor(tagged_hashBTC('MuSig/aux', rand), sk)
@@ -385,7 +389,10 @@ export function nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in){
 
 //individual nonce generation, use counter instead
 export function nonce_gen(sk,pk,m,extra_in){
-  rand = rfc6979GenerateNonce(sk, m);
+  const rand =randomBytes(32);
+
+  console.log("rand=", rand);
+
   return nonce_gen_internal(rand, sk, pk, m , extra_in);
 
 }
