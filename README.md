@@ -43,8 +43,15 @@ The test includes the BIP327 test vectors, enforcing compatibility of the signer
 
 ### Contracts (On chain Verifier)
 
-The Onchain verifier is the smartContract libSCL_BIP327.sol. 
+The Onchain verifier is the smartContract libSCL_BIP327.sol. To ensure interoperability and security, the verifier is compliant with 
+[BIP 327](https://github.com/bitcoin/bips/blob/master/bip-0327.mediawiki), only that it takes a decompressed key in raw format (2x32 bytes).
 
+```
+//A schnorr verifier compatible with BIP327
+//compared to BIP327, which takes only pubkeyX as input, it is assumed that public key has been decompressed using ecDecompress_BTC
+//this avoid to perform the same decompression at every verification
+  function Schnorr_verify(bytes memory message, uint256 pubkeyX, uint256 pubkeyY, uint256 r, uint256 s)
+```
 
 #### Deploy the stack on networks 
 
@@ -64,7 +71,7 @@ License is MIT, which allow any use as long as citation and headers are provided
 
 -  smoo.th  cryptographic library has been forked : https://github.com/get-smooth/crypto-lib.
 - The bip327.mjs module is heavily inspired from BIP327 python material, but using the more secure noble-curves repository. Biased advice: you shall always secure fund with a HW.
-
+- https://github.com/paradigmxyz/forge-alphanet: example of Delegation with 7702
 
 ## Future work
 
