@@ -19,6 +19,9 @@ Leveraging MPC multisig signature **Musig2** (MOO!) with Account abstraction, it
 <img src=image-2.png>
 </div>
 
+Keywords: Unruggable wallet, EIP7702, MPC, Musig2, Schnorr, BIP327.
+
+
 ## What is demonstrated ?
 
 ### Problematic
@@ -64,50 +67,6 @@ The Onchain verifier is the smartContract libSCL_BIP327.sol. To ensure interoper
 forge script tbd.s.sol --private-key <PRIVATE_KEY> --broadcast -vvv --rpc-url <RPC_URL>
 ```
 
-## Live contracts addresses
-
-While the main contract storing Musig2 verification is deployed on all chains. Only Mekong enables today a delegation using 7702.
-
-
-- Mekong testnet
-  * chainID:7078815900
-  * RPC:https://rpc.mekong.ethpandaops.io
-  * Deployed address:
-
-- Arbitrum Sepolia testnet
-  * chainID:421614
-  * RPC:https://endpoints.omniatech.io/v1/arbitrum/sepolia/public
-  * Deployed address:
-
-- Polygon Amoy
-  * chainID:80002
-  * RPC:https://polygon-amoy.drpc.org
-  * Deployed address:
-
-- Base Sepolia testnet
-  * chainID:84532
-  * RPC:wss://base-sepolia-rpc.publicnode.com
-  * Deployed address:
-
-- Scroll Sepolia testnet
-  * chainID:534351
-  * RPC:wss://scroll-sepolia-rpc.publicnode.com
-  * Deployed address:
-
-- CELO Alfajores testnet
-  * chainID:44787
-  * RPC:wss://alfajores-forno.celo-testnet.org/ws
-  * Deployed address:
-
-- Mantle testnet
-  * chainID:5003
-  * RPC:https://rpc.sepolia.mantle.xyz
-  * Deployed address:
-
-- Linea Sepolia
-  * chainID:59141
-  * RPC:wss://linea-sepolia-rpc.publicnode.com
-  * Deployed address:
 
 
 
@@ -186,12 +145,69 @@ License is MIT, which allow any use as long as citation and headers are provided
 - https://github.com/paradigmxyz/forge-alphanet: example of Delegation with 7702
 
 
+## Plan, achievements, remaining tasks
+### Architecture
+
+The initial plan consisted in:
+- implement a schnorr verifier, compatible with the BIP140, in solidity for the onchain verification
+- implement a front wallet from scratch with V0, illustrating the migration from an eoA to a delegation contract using 7702
+- implement a javascript signer compliant with BIP327
+- connect the whole together to enable a beginner user to switch from a single signer module to a multi-signer one.
+- if remaining time, try to extract from Ledger bitcoin App the Musig2 part, to provide a software+harware wallet unruggable by Bugs/Shaddy Recovery/A trap/Any tinfoil you can imagine.
+
+
+![alt text](image-3.png)
+
+_<p align="center"> - figure: project architecture_
 
 ## Warning
 
-This is hackathon code, nonce generation is not safe, do not use this in production !
+This is hackathon code, nonce generation is not safe, you need expertise to solve antireplay and other tricky stuffs,  do not use this in production !
 
 
 ## Future work
 
-Keywords: Unruggable wallet, EIP7702, MPC, Musig2, Schnorr, BIP327.
+## Live contracts addresses
+
+While the main contract storing Musig2 verification is deployed on all chains. Only Mekong enables today a delegation using 7702.
+
+
+- Mekong testnet
+  * chainID:7078815900
+  * RPC:https://rpc.mekong.ethpandaops.io
+  * Deployed address:
+
+- Arbitrum Sepolia testnet
+  * chainID:421614
+  * RPC:https://endpoints.omniatech.io/v1/arbitrum/sepolia/public
+  * Deployed address:
+
+- Polygon Amoy
+  * chainID:80002
+  * RPC:https://polygon-amoy.drpc.org
+  * Deployed address:
+
+- Base Sepolia testnet
+  * chainID:84532
+  * RPC:wss://base-sepolia-rpc.publicnode.com
+  * Deployed address:
+
+- Scroll Sepolia testnet
+  * chainID:534351
+  * RPC:wss://scroll-sepolia-rpc.publicnode.com
+  * Deployed address:
+
+- CELO Alfajores testnet
+  * chainID:44787
+  * RPC:wss://alfajores-forno.celo-testnet.org/ws
+  * Deployed address:
+
+- Mantle testnet
+  * chainID:5003
+  * RPC:https://rpc.sepolia.mantle.xyz
+  * Deployed address:
+
+- Linea Sepolia
+  * chainID:59141
+  * RPC:wss://linea-sepolia-rpc.publicnode.com
+  * Deployed address:
