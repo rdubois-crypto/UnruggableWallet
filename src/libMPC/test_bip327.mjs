@@ -1,5 +1,6 @@
-import{partial_sig_agg, schnorr_verify, sha256, tagged_hashBTC, prefix_msg, nonce_gen_internal, nonce_hash, nonce_agg, hash_keys, key_agg_coeff, int_from_bytes, key_agg, nonce_gen} from './bip327.mjs'
+import{IndividualPubKey_array, psign, partial_sig_agg, schnorr_verify, sha256, tagged_hashBTC, prefix_msg, nonce_gen_internal, nonce_hash, nonce_agg, hash_keys, key_agg_coeff, int_from_bytes, key_agg, nonce_gen} from './bip327.mjs'
 
+import { secp256k1 } from '@noble/curves/secp256k1'; // ESM and Common.js
 
 
 
@@ -286,14 +287,24 @@ function test_partialsig_withtweak_2(){
 //illustrate a session without tweak
 function test_sign_and_verify_random_notweak(){
 
-    const keypair1=secp256k1.utils.getRandomPrivateKey();
-    const keypair2=secp256k1.utils.getRandomPrivateKey();
+    const sk1=secp256k1.utils.randomPrivateKey();//this provides a 32 bytes array
+    const sk2=secp256k1.utils.randomPrivateKey();
     
-    let seckeys=[secp256k1.utils.bytesToHex(keypair1), secp256k1.utils.bytesToHex(keypair2)];
-    let pubkeys=[secp256k1.getPublicKey(seckeys[1]), secp256k1.getPublicKey(seckeys[2])];
+    console.log("sec=",sk1 );
+    const pubK1=IndividualPubKey_array(sk1);
+    const pubK2=IndividualPubKey_array(sk1);
+    
+
+    let seckeys=[Buffer.from(sk1).toString('hex'), Buffer.from(sk2).toString('hex')];
+    const pubkeys=[pubK1, pubK2];
+
+    
+    console.log("pub=",pubkeys );
 
 
     let aggpk = key_agg(pubkeys)[0];
+    console.log("aggregated:", aggpk);
+
     let msg="abc";
     let i=0;
 
@@ -307,12 +318,17 @@ function test_sign_and_verify_random_notweak(){
     //'aggnonce','pubkeys', 'tweaks', 'is_xonly','msg';
     const session_ctx=[aggnonce, pubkeys, [], [], msg];
 
+    return 1;
+    
     let p1=psign(nonce1[1], seckeys[0], session_ctx);
     let p2=psign(nonce2[1], seckeys[1], session_ctx);
     
-    psigs=[p1,p2];
-    
+    let psigs=[p1,p2];
+
     let res=partial_sig_agg(psigs, session_context);
+    let check=schnorr_verify(msg, aggpk, res);
+
+    console.log("check=", check);
 }
 
 
@@ -328,7 +344,8 @@ function test_sign_and_verify_random_notweak(){
   test_partialsig_withtweak_2();
     */
   test_schnorrverify();
-  
+  test_sign_and_verify_random_notweak();
+
   })();
   
   
