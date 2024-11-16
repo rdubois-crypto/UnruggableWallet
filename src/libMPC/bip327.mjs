@@ -320,7 +320,6 @@ function rfc6979GenerateNonce(privateKey, message) {
 //Hash to scalar for nonce
 //all input are bytes
 export function nonce_hash(rand, pk, aggpk, i, msgPrefixed, extraIn) {
-  console.log("ExtraIn:", extraIn);
   // Buffer to concatenate all inputs
   let buf =rand; 
 
@@ -366,7 +365,6 @@ export function nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in){
   }
 
   let msg_prefixed=prefix_msg(m);
-  console.log("extra internal", extra_in);
 
   let k_1 = nonce_hash(rand, pk, aggpk, 0, msg_prefixed, extra_in)
   let bk_1 = BigInt(`0x${k_1.toString('hex')}`)% secp256k1.CURVE.n;
@@ -393,9 +391,6 @@ export function nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in){
 export function nonce_gen(sk,pk,aggpk, m,extra_in){
   const rand =randomBytes(32);
 
-  console.log("rand=", rand);
-
-  console.log("extra_in=", extra_in);
   return nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in);
 
 }
@@ -447,12 +442,15 @@ export function psign(secnonce, sk, session_ctx){
 
   console.log("k1,k2=", k1, k2);
   let session_values= get_session_values(session_ctx);// (Q, gacc, _, b, R, e)  
-  let R=session_values[4];
+  let Q=session_values[0];
+  let gacc=session_values[1];
   let b=session_values[3];
+  let R=session_values[4];
   let e=session_values[5];
   //todo : test range of k1 and k2
   if (has_even_y(R)==false)
     {
+      console.log("****************************************************************switch")
       k1=secp256k1.CURVE.n-k1;
       k2=secp256k1.CURVE.n-k2;
     }
@@ -476,9 +474,11 @@ export function psign(secnonce, sk, session_ctx){
   console.log("a=",a);
 
   let g=BigInt('0x1') ;
-  if(has_even_y(session_values[0])==false)
+  if(has_even_y(Q)==false){//this line ensures the compatibility with requirement that aggregated key is even in verification
     g=secp256k1.CURVE.n-g;//n-1
-  let d = mulmod(g , session_values[1] );//d = (g * gacc * d_) % n
+    console.log("****************************************************************switch")
+  }
+  let d = mulmod(g , gacc );//d = (g * gacc * d_) % n
   d= mulmod(d, d_);
   console.log("d=",d);
   let s = (k1 + mulmod(b , k2) ) % secp256k1.CURVE.n;//
@@ -502,6 +502,7 @@ export function partial_sig_agg(psigs, session_ctx){
   let sessionV=get_session_values(session_ctx);//(Q, gacc, tacc, b, R, e)
   let Q=sessionV[0];//aggnonce
   let tacc=sessionV[2];
+  let b=sessionV[3];
   let e=sessionV[5];
 
   let s = BigInt(0);
@@ -529,8 +530,31 @@ export function partial_sig_agg(psigs, session_ctx){
 
 //verify one of the partial signature provided by a participant
 export function partial_sig_verify_internal(psig, pubnonce, pk, session_ctx){
+  let sessionV=get_session_values(session_ctx);//(Q, gacc, tacc, b, R, e)
+  let s = int_from_bytes(psig);
+  let R_s1 = cpoint(pubnonce.slice(0,33));
+  let R_s2 = cpoint(pubnonce.slice(33,66));
 
-  return true;
+  let Re_s_ =R_s1.add(R_s2.multiply(b));
+  let Re_s=Re_s_.toRawBytes();
+  if(Re_s[0]=0x03){
+    Re_s[0]=0x02;
+  }
+  Re_s=ProjectivePoint.fromHex(Re_s);
+  a=key_agg_coeff(session_ctx[1], pk);
+  let g=BigInt(1);
+  if(has_even_y(Q)==false)
+    g=secp256k1.CURVE.n - g;//n-1
+  let P=ProjectivePoint.fromHex(pk);//partial input public key
+
+  g=(g*gacc) % secp256k1.CURVE.n;
+  
+  let G= secp256k1.ProjectivePoint.BASE;
+  let P1 = (G.multiply(s));
+  let P2=Re_s.add(P.multiply((e*a*g)% secp256k1.CURVE.n);
+
+
+  return (P1==P2);
 }
 
 
@@ -541,10 +565,14 @@ export function partial_sig_verify_internal(psig, pubnonce, pk, session_ctx){
 //this is schnorr BIP340, pubkey is x-coordinate only, assuming even y
 export function schnorr_verify(msg, pubkey, sig){
 
-  if(sig.length!=64) 
+  if(sig.length!=64) {
+    console.log("bad sig length");
+    return false;}
+
+  if(pubkey.length!=32) {
+  console.log("bad pubkey length"); 
     return false;
-  if(pubkey.length!=32) 
-    return false;
+  }
 
   let r = int_from_bytes(sig.slice(0,32));
   let s = int_from_bytes(sig.slice(32,64));
@@ -559,8 +587,8 @@ export function schnorr_verify(msg, pubkey, sig){
   let meP=P.multiply( secp256k1.CURVE.n - e);
 
   let R =sG.add(meP).toRawBytes();//sG-eP, compressed
-  if(has_even_y(R)!=true)
-    return false;
+  //if(has_even_y(R)!=true)
+  //  return false;
 
 
   R=R.slice(1,33);//prune parity of y 

@@ -82,14 +82,19 @@ We use BIP327 with no tweak.
 
 First, user1 and user2 generates their private key, or import them from seed. 
 ```
- keypair1=secp256k1.utils.getRandomPrivateKey();
- keypair2=secp256k1.utils.getRandomPrivateKey();
+    const sk1=secp256k1.utils.randomPrivateKey();//this provides a 32 bytes array
+    const sk2=secp256k1.utils.randomPrivateKey();
 ```
 
 Corresponding aggregated key is derived from public keys:
 ```
-let pubkeys=[secp256k1.getPublicKey(seckeys[1]), secp256k1.getPublicKey(seckeys[2])];
-let aggpk = key_agg(pubkeys)[0];
+ const pubK1=IndividualPubKey_array(sk1);
+ const pubK2=IndividualPubKey_array(sk2);
+
+ const pubkeys=[pubK1, pubK2];
+
+ let aggpk = key_agg(pubkeys)[0];//here aggpk is a 33 bytes compressed public key
+ let x_aggpk=aggpk.slice(1,33);//x-only version for noncegen
 ```
 (of course in practice derivation occurs separately in each signer secure domain)
 

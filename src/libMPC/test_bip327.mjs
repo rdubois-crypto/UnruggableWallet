@@ -343,7 +343,7 @@ function test_sign_and_verify_random_notweak(){
 
     console.log("Aggregated Pubkey:", aggpk);
 
-    let msg=Buffer.from("abc", 'utf-8');
+    let msg=Buffer.from(randomBytes(32));
     let i=0;
 
     //diversification chain
@@ -384,12 +384,12 @@ function test_sign_and_verify_random_notweak(){
   test_nonceagg();//nonce aggregation is ok
   
   test_keyaggcoeff();//key aggregation is ok
-  test_partialsig_notweak();//partoaml signature is ok
+  test_partialsig_notweak();//partial signature is ok
   
   test_sigagg_notweak();//signature aggregation is ok
  
   test_sign_and_verify_random_notweak();
-  
+
   })();
   
   
