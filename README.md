@@ -65,7 +65,52 @@ forge script tbd.s.sol --private-key <PRIVATE_KEY> --broadcast -vvv --rpc-url <R
 ```
 
 ## Live contracts addresses
-(TBD)
+
+While the main contract storing Musig2 verification is deployed on all chains. Only Mekong enables today a delegation using 7702.
+
+
+- Mekong testnet
+  * chainID:
+  * RPC:
+  * Deployed address:
+
+- Arbitrum Sepolia testnet
+  * chainID:421614
+  * RPC:
+  * Deployed address:
+
+- Polygon Amoy
+  * chainID:80002
+  * RPC:
+  * Deployed address:
+
+- Base Sepolia testnet
+  * chainID:84532
+  * RPC:
+  * Deployed address:
+
+- Scroll Sepolia testnet
+  * chainID:534351
+  * RPC:
+  * Deployed address:
+
+- CELO testnet
+  * chainID:
+  * RPC:
+  * Deployed address:
+
+- Mantle testnet
+  * chainID:
+  * RPC:
+  * Deployed address:
+
+- Linea
+  * chainID:
+  * RPC:
+  * Deployed address:
+
+
+
 ## References
 - Multisignature in bitcoin : https://bitcoinwiki.org/wiki/multisignature
 - Musig2 : https://eprint.iacr.org/2020/1261
@@ -134,8 +179,9 @@ res is the final results to push onchain
 License is MIT, which allow any use as long as citation and headers are provided
 
 -  smoo.th  cryptographic library has been forked : https://github.com/get-smooth/crypto-lib.
-- The bip327.mjs module is heavily inspired from BIP327 python material, but using the more secure noble-curves repository. 
-
+- python reference code material : https://github.com/bitcoin/bips/tree/master/bip-0327
+- The bip327.mjs module is heavily inspired from above python material, adapted on top of noble-curves repository. 
+- noble curve ECC in javascript : https://github.com/paulmillr/noble-curves
 (Biased advice: you shall always secure fund with a HW.)
 - https://github.com/paradigmxyz/forge-alphanet: example of Delegation with 7702
 
