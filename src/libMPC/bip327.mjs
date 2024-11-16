@@ -65,6 +65,14 @@ function bytes_xor(a,b){
 }
 
 
+export function  IndividualPubKey_array(scalar_array){
+  const publicKey = getPublicKey(scalar_array); // 'true' for compressed format
+  if(publicKey[0]=0x03){
+    publicKey[0]=0x02;//force even parity as in BIP327
+    
+  }
+  return publicKey;
+}
 
 export function  IndividualPubKey(scalar){
   const publicKey = getPublicKey(scalar, true); // 'true' for compressed format

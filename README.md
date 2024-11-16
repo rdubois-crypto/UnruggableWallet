@@ -1,6 +1,9 @@
 # UnruggableWallet -- ETHGlobal BANGKOK 2024
 
-![alt text](image.png)
+
+<div align="center">
+<img src=image.png>
+</div>
 
 _<p align="center"> - MOO!, I said MOO(sig)_
 
@@ -10,9 +13,11 @@ _<p align="center"> - MOO!, I said MOO(sig)_
 
 
 This project was developed as part of the ETHGlobal Bangkok Hackathon.
-Leveraging MPC multisig signature **Musig2** with Account abstraction, it provides resistance against trapped or buggy hardware (which is the same) by providing a security equal to the **weaker** link. Compared to the safe, the multisig is computed offchain and provide only a single chain verification footprint. This provides both privacy and gas efficiency.
+Leveraging MPC multisig signature **Musig2** (MOO! ) with Account abstraction, it provides resistance against trapped or buggy hardware (which is the same) by providing a security equal to the **weaker** link. Compared to the safe, the multisig is computed offchain and provide only a single chain verification footprint. This provides both privacy and gas efficiency.
 
-![alt text](image-2.png)
+<div align="center">
+<img src=image-2.png>
+</div>
 
 ## What is demonstrated ?
 
@@ -91,7 +96,7 @@ let aggpk = key_agg(pubkeys)[0];
 
 ### Signature session
 
-Assuming user generated their public key according to previous section, they now want to jointly sign a message `msg`
+Assuming user generated their public key according to previous section, they now want to jointly sign a message `msg`. An example session is provided in 
 
 #### Round 1
 In first round, user1 and user2 generates public and secret nonces. Public are shared, secret keep in respective secure domain.
@@ -124,7 +129,9 @@ res is the final results to push onchain
 License is MIT, which allow any use as long as citation and headers are provided
 
 -  smoo.th  cryptographic library has been forked : https://github.com/get-smooth/crypto-lib.
-- The bip327.mjs module is heavily inspired from BIP327 python material, but using the more secure noble-curves repository. Biased advice: you shall always secure fund with a HW.
+- The bip327.mjs module is heavily inspired from BIP327 python material, but using the more secure noble-curves repository. 
+
+(Biased advice: you shall always secure fund with a HW.)
 - https://github.com/paradigmxyz/forge-alphanet: example of Delegation with 7702
 
 ## Future work
