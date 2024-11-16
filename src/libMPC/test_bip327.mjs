@@ -303,7 +303,16 @@ function test_sign_and_verify_random_notweak(){
     let aggnonce = nonce_agg(nonce1[0], nonce2[0]);
 
 
+    const tweaks=[];
+    //'aggnonce','pubkeys', 'tweaks', 'is_xonly','msg';
+    const session_ctx=[aggnonce, pubkeys, [], [], msg];
 
+    let p1=psign(nonce1[1], seckeys[0], session_ctx);
+    let p2=psign(nonce2[1], seckeys[1], session_ctx);
+    
+    psigs=[p1,p2];
+    
+    let res=partial_sig_agg(psigs, session_context);
 }
 
 

@@ -2,7 +2,7 @@
 
 ![alt text](image.png)
 
-
+_<p align="center"> - MOO!, I said MOO(sig)_
 
 ## Table of Contents
 
@@ -10,7 +10,7 @@
 
 
 This project was developed as part of the ETHGlobal Bangkok Hackathon.
-Leveraging MPC multisig signature with Account abstraction, it provides resistance against trapped or buggy hardware (which is the same) by providing a security equal to the ** weaker ** link. Compared to the safe, the multisig is computed offchain and provide only a single chain verification footprint. This provides both privacy and gas efficiency.
+Leveraging MPC multisig signature **Musig2** with Account abstraction, it provides resistance against trapped or buggy hardware (which is the same) by providing a security equal to the **weaker** link. Compared to the safe, the multisig is computed offchain and provide only a single chain verification footprint. This provides both privacy and gas efficiency.
 
 ![alt text](image-2.png)
 
@@ -60,10 +60,62 @@ forge script tbd.s.sol --private-key <PRIVATE_KEY> --broadcast -vvv --rpc-url <R
 ```
 
 ## Live contracts addresses
-
+(TBD)
 ## References
 - Multisignature in bitcoin : https://bitcoinwiki.org/wiki/multisignature
 - Musig2 : https://eprint.iacr.org/2020/1261
+
+
+
+## Description of Musig2 primitives
+
+A 2 of 2 session is described here. It generalizes identically with larger user set.
+We use BIP327 with no tweak.
+
+
+### Key generation and aggregation
+
+First, user1 and user2 generates their private key, or import them from seed. 
+```
+ keypair1=secp256k1.utils.getRandomPrivateKey();
+ keypair2=secp256k1.utils.getRandomPrivateKey();
+```
+
+Corresponding aggregated key is derived from public keys:
+```
+let pubkeys=[secp256k1.getPublicKey(seckeys[1]), secp256k1.getPublicKey(seckeys[2])];
+let aggpk = key_agg(pubkeys)[0];
+```
+(of course in practice derivation occurs separately in each signer secure domain)
+
+
+### Signature session
+
+Assuming user generated their public key according to previous section, they now want to jointly sign a message `msg`
+
+In first round, user1 and user2 generates public and secret nonces. Public are shared, secret keep in respective secure domain.
+
+```
+    let nonce1= nonce_gen(seckeys[0], pubkeys[0], aggpk, msg, i.to_bytes(4, 'big'));
+    let nonce2= nonce_gen(seckeys[1], pubkeys[1], aggpk, msg, i.to_bytes(4, 'big'));
+
+    let aggnonce = nonce_agg(nonce1[0], nonce2[0]);
+```
+
+In second round, each user computes its partial signature, which are then aggregated and broadcast on chain:
+
+```
+    const tweaks=[];
+    const session_ctx=[aggnonce, pubkeys, [], [], msg];
+
+    let p1=psign(nonce1[1], seckeys[0], session_ctx);
+    let p2=psign(nonce2[1], seckeys[1], session_ctx);
+    
+    psigs=[p1,p2];
+    
+    let res=partial_sig_agg(psigs, session_context);
+```
+res is the final results to push onchain
 
 ## Code ownership
 
