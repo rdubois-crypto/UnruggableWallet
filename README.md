@@ -176,7 +176,7 @@ This is hackathon code, nonce generation is not safe, you need expertise to solv
 
 ## Live contracts addresses
 
-While the main contract storing Musig2 verification is deployed on all chains. Only Mekong enables today a delegation using 7702.
+While the main contract storing Musig2 verification is deployed on all chains. Only Mekong enables today a delegation using 7702. A script present in /script enables to deploy in all the following networks.
 
 
 - Mekong testnet
@@ -186,35 +186,46 @@ While the main contract storing Musig2 verification is deployed on all chains. O
 
 - Arbitrum Sepolia testnet
   * chainID:421614
-  * RPC:https://endpoints.omniatech.io/v1/arbitrum/sepolia/public
-  * Deployed address:
+  * RPC:https://sepolia.arbiscan.io
+  * Deployed address:deserialization error: expected value at line 3 column 1
 
 - Polygon Amoy
   * chainID:80002
   * RPC:https://polygon-amoy.drpc.org
-  * Deployed address:
+  * Deployed address:0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
+https://www.okx.com/fr/web3/explorer/amoy/tx/0x41350b1d41af63a365feab650c3186e4fa180047ec99e976fc6205465227cfd4
 
 - Base Sepolia testnet
   * chainID:84532
   * RPC:wss://base-sepolia-rpc.publicnode.com
-  * Deployed address:
+  * Deployed address:0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
+Deployer: 0x77bcB19f4B4F3c6077399ADE22C366Bf66F3Ac36
+Deployed to: 0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
+Transaction hash: 0xca829b11b9d2483ad00ff2bd099ef42692395911c603861c78c9f57dbc31b85d
 
 - Scroll Sepolia testnet
   * chainID:534351
   * RPC:wss://scroll-sepolia-rpc.publicnode.com
-  * Deployed address:
+  * Deployed address:0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
+Deployer: 0x77bcB19f4B4F3c6077399ADE22C366Bf66F3Ac36
+Deployed to: 0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
+Transaction hash: 0xa435e9e9f644390d0f56eedf09fe391ddf2702793e378ee1ce8455a3a2255fb4
+
 
 - CELO Alfajores testnet
   * chainID:44787
   * RPC:wss://alfajores-forno.celo-testnet.org/ws
-  * Deployed address:
+  * Deployed address:0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
+Deployer: 0x77bcB19f4B4F3c6077399ADE22C366Bf66F3Ac36
+Deployed to: 0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
+Transaction hash: 0x8816dc294956dbccc123e3bbe1561266a064e0e2a291737570458fd2576aaff6
 
 - Mantle testnet
   * chainID:5003
   * RPC:https://rpc.sepolia.mantle.xyz
-  * Deployed address:
+  * Deployed address: no faucet provided
 
 - Linea Sepolia
   * chainID:59141
   * RPC:wss://linea-sepolia-rpc.publicnode.com
-  * Deployed address:
+  * Deployed address: no faucet provided
