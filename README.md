@@ -187,7 +187,7 @@ While the main contract storing Musig2 verification is deployed on all chains. O
 - Arbitrum Sepolia testnet
   * chainID:421614
   * RPC:https://sepolia.arbiscan.io
-  * Deployed address:deserialization error: expected value at line 3 column 1
+  * Deployed address:
 Deployer: 0x77bcB19f4B4F3c6077399ADE22C366Bf66F3Ac36
 Deployed to: 0x05eFAC4C53Ec12F11f144d0a0D18Df6dfDf83409
 Transaction hash: 0xfdc5aeb23b141f1d6de1ca247658566e96d89769eab62d134230710b0ef3d4ed
