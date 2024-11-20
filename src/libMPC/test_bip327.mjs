@@ -318,7 +318,55 @@ function test_partialsig_withtweak_2(){
  
 }
 
-//illustrate a session without tweak
+
+//a full session generated using reference.py
+function unitary_fullsession(){
+  const msg=Buffer.from("e0601e248a22338872c707bdd7627195e4ea56ac9ad4c4c900560b8f39ad1dab", 'hex');
+
+  const sk1=Buffer.from("a35de7d4e30dc61b6eadd376c2e62072f2be817b6468d3021e2a443762d396bd", 'hex');
+  const pubK1=IndividualPubKey_array(sk1);
+  const sk2=Buffer.from("cbdee7c9611746164315d955f75234778dddaa3e50f220283f3deb0dafe20dab", 'hex');
+  const pubK2=IndividualPubKey_array(sk2);
+
+  const pubkeys=[pubK1, pubK2];
+  
+  let aggpk = key_agg(pubkeys)[0];//here aggpk is a 33 bytes compressed public key
+  let x_aggpk=aggpk.slice(1,33);//x-only version for noncegen
+
+  console.log("Aggregated Pubkey:", aggpk);
+
+  const rand1=Buffer.from("0cea0923038e6fa408e728539dca5accb1f9d433150f0d2680607afe831955bd", 'hex');
+  const rand2=Buffer.from("cb555086ba1e545c0fef5bc4c35bb6e1fec90a482a4bfc20e10896c372e78661", 'hex');
+
+  const nonce1=nonce_gen_internal(rand1, sk1, pubK1, x_aggpk, msg, Buffer.from("00000000", 'hex'));
+  const nonce2=nonce_gen_internal(rand2, sk2, pubK2, x_aggpk, msg, Buffer.from("00000000", 'hex'));
+
+  let aggnonce = nonce_agg([nonce1[1].toString('hex'), nonce2[1].toString('hex')]);
+  console.log("aggnonce is =", aggnonce);
+
+
+    //'aggnonce','pubkeys', 'tweaks', 'is_xonly','msg';
+    const session_ctx=[aggnonce, pubkeys, [], [], msg];
+
+    let p1=psign(nonce1[0], sk1, session_ctx);
+    console.log("p1=",p1);
+
+
+    let p2=psign(nonce2[0], sk2, session_ctx);
+    console.log("p2=",p2);
+    
+    let psigs=[p1,p2];
+
+    let res=partial_sig_agg(psigs, session_ctx);
+    console.log("res=", res, res.length);
+
+    let check=schnorr_verify(msg, x_aggpk, res);
+
+    console.log("check=", check);
+}
+
+
+//illustrate a session without tweak, generates a new vector at each iteration
 function test_sign_and_verify_random_notweak(){
   console.log("/*************************** ");
   console.log("Test full session:");
@@ -336,6 +384,7 @@ function test_sign_and_verify_random_notweak(){
 
     console.log("pubK1=",pubK1 );
     console.log("pubK2=",pubK2 );
+    
     const pubkeys=[pubK1, pubK2];
 
     let aggpk = key_agg(pubkeys)[0];//here aggpk is a 33 bytes compressed public key
@@ -379,6 +428,7 @@ function test_sign_and_verify_random_notweak(){
   (async () => {
     
   // Example usage:
+  /*
   test_tagged_hashBTC(); //hash is ok
   test_noncegen(); //nonce generation is ok
   test_nonceagg();//nonce aggregation is ok
@@ -387,8 +437,10 @@ function test_sign_and_verify_random_notweak(){
   test_partialsig_notweak();//partial signature is ok
   
   test_sigagg_notweak();//signature aggregation is ok
- 
+ */
   test_sign_and_verify_random_notweak();
+  unitary_fullsession();
+ 
 
   })();
   

@@ -129,9 +129,11 @@ function has_even_y(RawHex_Point){
 //return the ai coefficient 
 function key_agg_coeff_internal(pubkeys, pki, pk2){
   let L = hash_keys(pubkeys);
-  if (pki == pk2)
-        return BigInt('0x1');
-  
+ 
+  if (Buffer.from(pki).equals(pk2))
+        {
+          return BigInt('0x1');
+        }
   return int_from_bytes(tagged_hashBTC('KeyAgg coefficient', Buffer.concat([L , pki])))  % secp256k1.CURVE.n
 }
 
@@ -168,15 +170,14 @@ export function key_agg(pubkeys){
   let P= secp256k1.ProjectivePoint.BASE;
   for(let i=0;i<u;i++){
     let Pi=cpoint(pubkeys[i]);
-   // console.log("Pi",Pi)
+   
     if(Pi==false)
       return false;
     let ai=key_agg_coeff_internal(pubkeys, pubkeys[i], pk2);
-   // console.log("ai=",ai);
-   // console.log("aiPi=",Pi.multiply(ai));
+  
   
     Q = Q.add( Pi.multiply(ai));//Q=Q+aiPi  
-    //console.log("Q",Q)
+   
   }
   if(Q==secp256k1.ProjectivePoint.ZERO)
     return false;
@@ -198,21 +199,16 @@ export function apply_tweak(key_aggCtx, tweak, is_xonly){
   let P= secp256k1.ProjectivePoint.BASE;//base Point
   let g=BigInt('0x1') ;
 
- // console.log("Q1", Q);
 
   if(is_xonly&& (has_even_y(key_aggCtx[0])==false)){
     Q=Q.negate();
     g=secp256k1.CURVE.n-g;//n-1
   }
 
-  //console.log("Q2", Q);
- 
   Q=Q.add(P.multiply(t));//Q=Q+t.P
   let gacc_ = (g * key_aggCtx[1] ) % secp256k1.CURVE.n
   let tacc_ = (t + g * key_aggCtx[2]) % secp256k1.CURVE.n
 
-  //console.log("Q", Q.toRawBytes());
-  //console.log("gacc, tacc=", gacc_, tacc_);
   return[Q.toRawBytes(), gacc_, tacc_];
 
 }
@@ -221,16 +217,15 @@ export function apply_tweak(key_aggCtx, tweak, is_xonly){
 export function key_agg_and_tweak(pubkeys, tweaks, is_xonly){
   let keyagg_ctx = key_agg(pubkeys);//key_aggCtx prior to tweaks
 
-  //console.log("@@keyagg pubkeys:", keyagg_ctx)
   if(tweaks.length != is_xonly.length) 
     {
-      console.log("----------------------------------------wrong length");
+      console.log("wrong length");
       return false;
     }  
 
   for(let i=0;i<tweaks.length;i++){
     keyagg_ctx=apply_tweak(keyagg_ctx, tweaks[i], is_xonly[i]);
-   // console.log("@@keyaggctx : ",keyagg_ctx[0].toString(16));
+   
   }
   return keyagg_ctx;
 }
@@ -244,7 +239,6 @@ export function xbytes(bytes_Point){
 //input session context: 'aggnonce','pubkeys', 'tweaks', 'is_xonly','msg
 //return (Q, gacc, tacc, b, R, e)=[Point, int, int, int, Point, int]
 export function get_session_values(SessionContext){
-  //console.log("--------session context input:", SessionContext);
 
   let aggnonce=SessionContext[0];
   if(aggnonce.length!=66) return false;
@@ -264,8 +258,6 @@ export function get_session_values(SessionContext){
 
   concat=Buffer.concat([xbytes(R.toRawBytes()), preconcat]);
   let e = int_from_bytes(tagged_hashBTC('BIP0340/challenge', concat)) % secp256k1.CURVE.n;
-
-  //console.log("--------session context output:", [keyagg_ctx[0], keyagg_ctx[1], keyagg_ctx[2], b, R.toRawBytes(), e.toString(16)]);
 
   return [keyagg_ctx[0], keyagg_ctx[1], keyagg_ctx[2], b, R.toRawBytes(), e];//(Q, gacc, tacc, b, R, e)
 }
@@ -374,8 +366,6 @@ export function nonce_gen_internal(rand, sk,pk,aggpk, m,extra_in){
 
   if(k_1==0) return false;
   if(k_2==0) return false;
-  //console.log("k1=",k_1.toString('hex'));
-  //console.log("k2=",k_2.toString('hex'));
 
   let P= secp256k1.ProjectivePoint.BASE;
   let Rs1 = (P.multiply(bk_1)).toRawBytes();
@@ -398,7 +388,7 @@ export function nonce_gen(sk,pk,aggpk, m,extra_in){
 //this part correspond to the round 1 of Musig: aggregation of individual nonces
 //input is a 2 dimensional array of pubnonces of size u, in string format
 export function nonce_agg(pubnonces){
-  console.log("input to nonce agg", pubnonces);
+ 
 
   let u = pubnonces.length;
   let aggnonce = Buffer.alloc(0);
@@ -414,7 +404,7 @@ export function nonce_agg(pubnonces){
       Rj= Rj.add(Rij);
     }
     aggnonce=Buffer.concat([aggnonce, cbytes_ext(Rj)]);
-    console.log("aggnonce=", aggnonce);
+   
 
   }
   return aggnonce;
@@ -440,7 +430,6 @@ export function psign(secnonce, sk, session_ctx){
   let k1= int_from_bytes(secnonce.slice(0, 32));
   let k2= int_from_bytes(secnonce.slice(32, 64));
 
-  console.log("k1,k2=", k1, k2);
   let session_values= get_session_values(session_ctx);// (Q, gacc, _, b, R, e)  
   let Q=session_values[0];
   let gacc=session_values[1];
@@ -450,7 +439,6 @@ export function psign(secnonce, sk, session_ctx){
   //todo : test range of k1 and k2
   if (has_even_y(R)==false)
     {
-      console.log("****************************************************************switch")
       k1=secp256k1.CURVE.n-k1;
       k2=secp256k1.CURVE.n-k2;
     }
@@ -462,31 +450,26 @@ export function psign(secnonce, sk, session_ctx){
   let secnonce_pk=secnonce.slice(64, 97);//pk is part of secnonce
   let Q3=ProjectivePoint.fromHex(secnonce_pk);
 
-  console.log("P=",P);
-  console.log("Q3=",Q3);
   //todo test x equality
   if(equalsX(P,Q3)==false){
-    console.log("false");
     return false;//wrong public key
   }
   
   let a=get_session_key_agg_coeff(session_ctx[1], secnonce.slice(64, 97));
-  console.log("a=",a);
 
   let g=BigInt('0x1') ;
   if(has_even_y(Q)==false){//this line ensures the compatibility with requirement that aggregated key is even in verification
     g=secp256k1.CURVE.n-g;//n-1
-    console.log("****************************************************************switch")
+    
   }
   let d = mulmod(g , gacc );//d = (g * gacc * d_) % n
   d= mulmod(d, d_);
-  console.log("d=",d);
   let s = (k1 + mulmod(b , k2) ) % secp256k1.CURVE.n;//
   s= (s+ mulmod(mulmod(e , a) , d))% secp256k1.CURVE.n;
-  console.log("s=",s);
+ 
   //todo: optional partial verif
   let psig=etc.numberToBytesBE(s,32);
-  console.log("psig=",psig);
+ 
   return psig;
 }
 
@@ -518,7 +501,6 @@ export function partial_sig_agg(psigs, session_ctx){
   if(has_even_y(Q)==false)
     g=secp256k1.CURVE.n - g;//n-1
 
-  console.log("tacc", tacc);
 
   s = (s + e * g * tacc) % secp256k1.CURVE.n;
   s=Buffer.from(s.toString(16), 'hex');
@@ -551,7 +533,7 @@ export function partial_sig_verify_internal(psig, pubnonce, pk, session_ctx){
   
   let G= secp256k1.ProjectivePoint.BASE;
   let P1 = (G.multiply(s));
-  let P2=Re_s.add(P.multiply((e*a*g)% secp256k1.CURVE.n);
+  let P2=Re_s.add(P.multiply((e*a*g)% secp256k1.CURVE.n));
 
 
   return (P1==P2);
@@ -578,23 +560,19 @@ export function schnorr_verify(msg, pubkey, sig){
   let s = int_from_bytes(sig.slice(32,64));
   let RawP= Buffer.concat([ Buffer.from("02",'hex'), pubkey]);
   let P=secp256k1.ProjectivePoint.fromHex(RawP);//extract even public key of coordinates x=pubkey
-  console.log("PubK=", P);
 
   let concat=Buffer.concat([sig.slice(0,32),pubkey,msg]);
   let e = int_from_bytes(tagged_hashBTC('BIP0340/challenge', concat)) % secp256k1.CURVE.n;
-  console.log("e=",e);
+  
   let sG=(secp256k1.ProjectivePoint.BASE).multiply(s);
   let meP=P.multiply( secp256k1.CURVE.n - e);
 
   let R =sG.add(meP).toRawBytes();//sG-eP, compressed
-  //if(has_even_y(R)!=true)
-  //  return false;
+  if(has_even_y(R)!=true)
+    return false;
 
 
   R=R.slice(1,33);//prune parity of y 
-  console.log("final comparizon");
-
-  console.log("expected r",r, "recomputed r", int_from_bytes(R));
 
   if(int_from_bytes(R)!=r)
     return false;
