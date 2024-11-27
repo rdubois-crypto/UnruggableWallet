@@ -63,11 +63,14 @@ The Onchain verifier is the smartContract libSCL_BIP327.sol. To ensure interoper
 
 #### Deploy the stack on networks 
 
+Fill your private key related to a funded accounts, then run the following script:
+(for mainnet, you shall use --ledger instead).
+
 ```bash
-forge script tbd.s.sol --private-key <PRIVATE_KEY> --broadcast -vvv --rpc-url <RPC_URL>
+./script/deploy.sh
 ```
 
-
+The script is configured to deploy on most testnet which provided faucet in the EthGlobal Hacker pack. Note that RPCs might change.
 
 
 ## References
